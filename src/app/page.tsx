@@ -3,6 +3,11 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Bot, SendHorizontal, Sparkles } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+
 type ChatRole = "user" | "bot";
 
 type ChatMessage = {
@@ -92,87 +97,89 @@ export default function Home() {
       </div>
 
       <section className="relative mx-auto w-full max-w-5xl px-4 py-6 md:px-8 md:py-10">
-        <div className="overflow-hidden rounded-3xl border border-border/80 bg-card/90 shadow-[0_20px_60px_rgba(2,16,60,0.18)] backdrop-blur-xl">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-muted/40 px-5 py-4">
-            <div className="flex items-center gap-3">
-              <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
-                <Bot size={20} />
+        <Card className="overflow-hidden border-border/80 bg-card/90 shadow-[0_20px_60px_rgba(2,16,60,0.18)] backdrop-blur-xl">
+          <CardHeader className="border-b border-border/80 bg-muted/40">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
+                  <Bot size={20} />
+                </div>
+                <div>
+                  <CardTitle className="text-base md:text-lg">Atendimento Inteligente</CardTitle>
+                  <CardDescription>Chat demonstrativo do projeto institucional</CardDescription>
+                </div>
               </div>
-              <div>
-                <h1 className="text-base font-semibold md:text-lg">Atendimento Inteligente</h1>
-                <p className="text-xs text-muted-foreground md:text-sm">
-                  Chat demonstrativo do projeto institucional
-                </p>
+
+              <Badge variant="secondary" className="gap-2 rounded-full border border-border bg-background px-3 py-1 text-xs">
+                <Sparkles size={14} className="text-primary" />
+                IA online para testes
+              </Badge>
+            </div>
+          </CardHeader>
+
+          <CardContent className="space-y-4 p-0">
+            <div className="border-b border-border/70 px-5 py-3">
+              <div className="flex flex-wrap gap-2">
+                {QUICK_PROMPTS.map((prompt) => (
+                  <Button
+                    key={prompt}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => sendMessage(prompt)}
+                    className="rounded-full"
+                  >
+                    {prompt}
+                  </Button>
+                ))}
               </div>
             </div>
 
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-xs text-muted-foreground">
-              <Sparkles size={14} className="text-primary" />
-              IA online para testes
-            </div>
-          </div>
-
-          <div className="border-b border-border/70 px-5 py-3">
-            <div className="flex flex-wrap gap-2">
-              {QUICK_PROMPTS.map((prompt) => (
-                <button
-                  key={prompt}
-                  type="button"
-                  onClick={() => sendMessage(prompt)}
-                  className="rounded-full border border-border bg-background px-3 py-1.5 text-xs text-foreground transition-colors hover:border-primary/50 hover:bg-accent"
-                >
-                  {prompt}
-                </button>
+            <div className="h-[58vh] space-y-4 overflow-y-auto scrollbar-none px-5 py-5 md:px-6">
+              {messages.map((message) => (
+                <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                  <div
+                    className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm md:max-w-[78%] ${
+                      message.role === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "border border-slate-200 bg-white text-slate-900"
+                    }`}
+                  >
+                    {message.text}
+                  </div>
+                </div>
               ))}
-            </div>
-          </div>
 
-          <div className="h-[58vh] space-y-4 overflow-y-auto px-5 py-5 md:px-6">
-            {messages.map((message) => (
-              <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm md:max-w-[78%] ${
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "border border-slate-200 bg-white text-slate-900"
-                  }`}
-                >
-                  {message.text}
+              {isTyping ? (
+                <div className="flex justify-start">
+                  <div className="inline-flex items-center gap-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-500 shadow-sm">
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400" />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ) : null}
 
-            {isTyping ? (
-              <div className="flex justify-start">
-                <div className="inline-flex items-center gap-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-500 shadow-sm">
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" />
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400" />
-                </div>
-              </div>
-            ) : null}
-
-            <div ref={endRef} />
-          </div>
-
-          <form onSubmit={handleSubmit} className="border-t border-border/80 bg-background/70 p-4 md:p-5">
-            <div className="flex items-center gap-2 rounded-2xl border border-border bg-card p-2 shadow-sm">
-              <input
-                value={input}
-                onChange={(event) => setInput(event.target.value)}
-                placeholder="Digite sua duvida academica, financeira ou institucional..."
-                className="h-11 flex-1 bg-transparent px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
-              />
-              <button
-                type="submit"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-[var(--primary-hover)]"
-              >
-                Enviar
-                <SendHorizontal size={16} />
-              </button>
+              <div ref={endRef} />
             </div>
-          </form>
-        </div>
+          </CardContent>
+
+          <CardFooter className="border-t border-border/80 bg-background/70 p-4 md:p-5">
+            <form onSubmit={handleSubmit} className="w-full">
+              <div className="flex items-center gap-2 rounded-2xl border border-border bg-card p-2 shadow-sm">
+                <Input
+                  value={input}
+                  onChange={(event) => setInput(event.target.value)}
+                  placeholder="Digite sua duvida academica, financeira ou institucional..."
+                  className="h-11 border-0 bg-transparent shadow-none focus-visible:ring-0"
+                />
+                <Button type="submit" className="h-11 rounded-xl px-4">
+                  Enviar
+                  <SendHorizontal size={16} />
+                </Button>
+              </div>
+            </form>
+          </CardFooter>
+        </Card>
       </section>
     </div>
   );

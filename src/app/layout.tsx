@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { AppHeader } from "../components/app-header";
+
+import { AppShell } from "@/components/app-shell";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,6 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Chatbot Institucional Unifor",
   description: "Chatbot informativo e formativo para apoio academico.",
+  icons: {
+    icon: "/assets/unifor/unifor-logo-07.png",
+    shortcut: "/assets/unifor/unifor-logo-07.png",
+    apple: "/assets/unifor/unifor-logo-07.png",
+  },
 };
 
 export default function RootLayout({
@@ -26,11 +32,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <div className="min-h-screen bg-background text-foreground">
-          <AppHeader />
-          <main>{children}</main>
-        </div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
 }
+

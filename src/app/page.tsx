@@ -1,186 +1,183 @@
-"use client";
+﻿"use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
-import { Bot, SendHorizontal, Sparkles } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { FormEvent, useState } from "react";
+import { Eye, EyeOff, Instagram, Linkedin, Youtube } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
-type ChatRole = "user" | "bot";
-
-type ChatMessage = {
-  id: number;
-  role: ChatRole;
-  text: string;
+type LoginPayload = {
+  matricula: string;
+  senha: string;
 };
 
-const QUICK_PROMPTS = [
-  "Como funciona a frequencia de 75%?",
-  "Quantos creditos optativos eu preciso?",
-  "Tenho duvida sobre financeiro.",
+const SOCIAL_LINKS = [
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/uniforcomunica/",
+    icon: Instagram,
+  },
+  {
+    label: "YouTube",
+    href: "https://www.youtube.com/@UniversidadedeFortaleza",
+    icon: Youtube,
+  },
+  {
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/school/universidade-de-fortaleza/",
+    icon: Linkedin,
+  },
 ];
 
-function buildReply(message: string): string {
-  const text = message.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-  if (text.includes("falta") || text.includes("frequencia")) {
-    return "Para frequencia, posso te explicar as regras de 75% e 80%. Voce quer ver por disciplina de 72h?";
-  }
-
-  if (text.includes("credito") || text.includes("creditos") || text.includes("optativa")) {
-    return "Sobre optativas: o objetivo e integralizar 12 creditos. Se quiser, eu te mostro um exemplo de planejamento.";
-  }
-
-  if (text.includes("financeiro") || text.includes("mensalidade") || text.includes("boleto")) {
-    return "No financeiro, posso orientar em boleto, mensalidade e negociacao. Qual parte voce quer resolver agora?";
-  }
-
-  return "Posso te ajudar em 3 frentes: Academico, Financeiro e Secretaria. Qual delas voce quer agora?";
+async function simulateLoginRequest(_payload: LoginPayload) {
+  await new Promise((resolve) => window.setTimeout(resolve, 500));
 }
 
-export default function Home() {
-  const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 1,
-      role: "bot",
-      text: "Ola! Eu sou o Chatbot Institucional Unifor. Me diga sua duvida e eu te ajudo agora.",
-    },
-  ]);
-  const endRef = useRef<HTMLDivElement | null>(null);
+export default function LoginPage() {
+  const router = useRouter();
+  const [matricula, setMatricula] = useState("");
+  const [senha, setSenha] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsSubmitting(true);
 
-  function sendMessage(rawText: string) {
-    const trimmed = rawText.trim();
-    if (!trimmed) {
-      return;
-    }
-
-    const userMessage: ChatMessage = {
-      id: Date.now(),
-      role: "user",
-      text: trimmed,
+    const payload = {
+      matricula: matricula.trim(),
+      senha,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
-    setIsTyping(true);
-
-    window.setTimeout(() => {
-      const botMessage: ChatMessage = {
-        id: Date.now() + 1,
-        role: "bot",
-        text: buildReply(trimmed),
-      };
-
-      setMessages((prev) => [...prev, botMessage]);
-      setIsTyping(false);
-    }, 550);
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    sendMessage(input);
-    setInput("");
+    await simulateLoginRequest(payload);
+    router.push("/chat");
   }
 
   return (
-    <div className="relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-20 top-16 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
-        <div className="absolute bottom-10 right-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
-      </div>
+    <section className="login-page min-h-screen overflow-hidden">
+      <div className="grid min-h-screen lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="login-hero relative flex min-h-[42vh] flex-col justify-between px-6 py-8 text-white sm:px-10 sm:py-10 lg:min-h-screen lg:px-14 lg:py-12">
+          <div className="login-hero__image" />
+          <div className="login-hero__overlay" />
 
-      <section className="relative mx-auto w-full max-w-5xl px-4 py-6 md:px-8 md:py-10">
-        <Card className="overflow-hidden border-border/80 bg-card/90 shadow-[0_20px_60px_rgba(2,16,60,0.18)] backdrop-blur-xl">
-          <CardHeader className="border-b border-border/80 bg-muted/40">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
-                  <Bot size={20} />
-                </div>
-                <div>
-                  <CardTitle className="text-base md:text-lg">Atendimento Inteligente</CardTitle>
-                  <CardDescription>Chat demonstrativo do projeto institucional</CardDescription>
-                </div>
-              </div>
-
-              <Badge variant="secondary" className="gap-2 rounded-full border border-border bg-background px-3 py-1 text-xs">
-                <Sparkles size={14} className="text-primary" />
-                IA online para testes
-              </Badge>
-            </div>
-          </CardHeader>
-
-          <CardContent className="space-y-4 p-0">
-            <div className="border-b border-border/70 px-5 py-3">
-              <div className="flex flex-wrap gap-2">
-                {QUICK_PROMPTS.map((prompt) => (
-                  <Button
-                    key={prompt}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => sendMessage(prompt)}
-                    className="rounded-full"
-                  >
-                    {prompt}
-                  </Button>
-                ))}
-              </div>
+          <div className="relative z-10 max-w-xl space-y-6">
+            <div className="space-y-3">
+              <p className="inline-flex rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.32em] text-white/80">
+                Portal institucional
+              </p>
+              <h1 className="max-w-lg text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">
+                Seu acesso ao Chatbot Institucional da Unifor.
+              </h1>
+              <p className="max-w-lg text-sm leading-6 text-white/78 sm:text-base">
+                Assistente institucional para esclarecimento de dúvidas acadêmicas e administrativas.
+              </p>
             </div>
 
-            <div className="h-[58vh] space-y-4 overflow-y-auto scrollbar-none px-5 py-5 md:px-6">
-              {messages.map((message) => (
-                <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div
-                    className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm md:max-w-[78%] ${
-                      message.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "border border-slate-200 bg-white text-slate-900"
-                    }`}
-                  >
-                    {message.text}
-                  </div>
-                </div>
+            <div className="flex flex-wrap gap-3 text-white/85">
+              {SOCIAL_LINKS.map(({ label, href, icon: Icon }) => (
+                <Link
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={label}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 transition hover:bg-white/18"
+                >
+                  <Icon size={18} />
+                </Link>
               ))}
+            </div>
 
-              {isTyping ? (
-                <div className="flex justify-start">
-                  <div className="inline-flex items-center gap-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-500 shadow-sm">
-                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
-                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" />
-                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400" />
+            <p className="text-sm font-medium text-white/88 sm:text-base">
+              Fundação Edson Queiroz | Universidade de Fortaleza
+            </p>
+          </div>
+        </div>
+
+        <div className="login-pattern relative flex items-center justify-center px-5 py-8 sm:px-8 lg:px-10">
+          <div className="login-pattern__symbols" />
+
+          <Card className="relative z-10 w-full max-w-[42rem] rounded-[2rem] border-white/70 bg-white/92 shadow-[0_35px_110px_rgba(3,40,120,0.2)] backdrop-blur-md">
+            <CardHeader className="space-y-6 px-6 pb-0 pt-8 text-center sm:px-10 sm:pt-10">
+              <Image
+                src="/assets/unifor/unifor-logo-07.png"
+                alt="Símbolo Unifor"
+                width={220}
+                height={138}
+                className="mx-auto h-auto w-32 sm:w-36"
+              />
+
+              <div className="space-y-2">
+                <CardTitle className="text-3xl font-semibold tracking-tight text-slate-950">
+                  Acesse sua conta Unifor
+                </CardTitle>
+                <CardDescription className="mx-auto max-w-md text-base leading-7 text-slate-600">
+                  Entre com sua matrícula e senha para acessar o chat. O envio está preparado para o back-end, mas por
+                  enquanto segue em modo demonstrativo.
+                </CardDescription>
+              </div>
+            </CardHeader>
+
+            <CardContent className="px-6 pb-8 pt-8 sm:px-10 sm:pb-10">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2.5">
+                  <label htmlFor="matricula" className="block text-lg font-semibold text-slate-950">
+                    Matrícula
+                  </label>
+                  <Input
+                    id="matricula"
+                    required
+                    value={matricula}
+                    onChange={(event) => setMatricula(event.target.value)}
+                    placeholder="Matrícula"
+                    autoComplete="username"
+                    className="h-14 rounded-xl border-slate-200 bg-white px-4 text-base shadow-none focus-visible:ring-2"
+                  />
+                </div>
+
+                <div className="space-y-2.5">
+                  <label htmlFor="senha" className="block text-lg font-semibold text-slate-950">
+                    Senha
+                  </label>
+                  <div className="relative">
+                    <Input
+                      id="senha"
+                      required
+                      type={showPassword ? "text" : "password"}
+                      value={senha}
+                      onChange={(event) => setSenha(event.target.value)}
+                      placeholder="Digite sua senha"
+                      autoComplete="current-password"
+                      className="h-14 rounded-xl border-slate-200 bg-white px-4 pr-14 text-base shadow-none focus-visible:ring-2"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute inset-y-0 right-0 inline-flex w-14 items-center justify-center text-primary transition hover:text-primary/80"
+                      aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
                   </div>
                 </div>
-              ) : null}
 
-              <div ref={endRef} />
-            </div>
-          </CardContent>
-
-          <CardFooter className="border-t border-border/80 bg-background/70 p-4 md:p-5">
-            <form onSubmit={handleSubmit} className="w-full">
-              <div className="flex items-center gap-2 rounded-2xl border border-border bg-card p-2 shadow-sm">
-                <Input
-                  value={input}
-                  onChange={(event) => setInput(event.target.value)}
-                  placeholder="Digite sua duvida academica, financeira ou institucional..."
-                  className="h-11 border-0 bg-transparent shadow-none focus-visible:ring-0"
-                />
-                <Button type="submit" className="h-11 rounded-xl px-4">
-                  Enviar
-                  <SendHorizontal size={16} />
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="h-14 w-full rounded-xl bg-primary text-base font-semibold shadow-[0_16px_35px_rgba(4,76,244,0.28)] hover:bg-[var(--primary-hover)]"
+                >
+                  {isSubmitting ? "Entrando..." : "Acessar"}
                 </Button>
-              </div>
-            </form>
-          </CardFooter>
-        </Card>
-      </section>
-    </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </section>
   );
 }
+

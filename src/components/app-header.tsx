@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { Moon, Sun } from "lucide-react";
@@ -44,17 +44,15 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-border/80 bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex h-20 w-full max-w-6xl items-center justify-between gap-4 px-4 md:px-8">
-        <div className="flex min-w-0 items-center gap-3 md:gap-4">
-          <div className="rounded-xl border border-border/80 bg-white/95 p-2 shadow-sm">
-            <Image
-              src="/assets/unifor/unifor-logo-05.png"
-              alt="Logo Unifor"
-              width={170}
-              height={52}
-              priority
-              className="h-8 w-auto md:h-9"
-            />
-          </div>
+        <div className="flex min-w-0 items-center gap-4 md:gap-5">
+          <Image
+            src="/assets/unifor/unifor-logo-05.png"
+            alt="Logo Unifor"
+            width={260}
+            height={80}
+            priority
+            className="h-auto w-28 md:w-36"
+          />
 
           <div className="min-w-0">
             <p className="truncate text-base font-bold leading-tight text-foreground md:text-lg">

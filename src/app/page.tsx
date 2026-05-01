@@ -11,8 +11,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 
 type LoginPayload = {
-  matricula: string;
-  senha: string;
+  registration: string;
+  password: string;
+};
+
+type LoginSuccessResponse = {
+  sessionId: string;
+};
+
+type LoginErrorResponse = {
+  message?: string;
+  code?: string;
+  status?: number;
 };
 
 const SOCIAL_LINKS = [
@@ -33,28 +43,52 @@ const SOCIAL_LINKS = [
   },
 ];
 
-async function simulateLoginRequest(_payload: LoginPayload) {
-  await new Promise((resolve) => window.setTimeout(resolve, 500));
-}
-
 export default function LoginPage() {
   const router = useRouter();
   const [matricula, setMatricula] = useState("");
   const [senha, setSenha] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage("");
 
-    const payload = {
-      matricula: matricula.trim(),
-      senha,
+    const payload: LoginPayload = {
+      registration: matricula.trim(),
+      password: senha,
     };
 
-    await simulateLoginRequest(payload);
-    router.push("/chat");
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = (await response.json().catch(() => ({}))) as LoginSuccessResponse & LoginErrorResponse;
+
+      if (!response.ok) {
+        setErrorMessage(data.message || "Nao foi possivel realizar o login. Verifique seus dados e tente novamente.");
+        return;
+      }
+
+      if (!data.sessionId) {
+        setErrorMessage("Nao foi possivel iniciar sua sessao. Tente novamente.");
+        return;
+      }
+
+      window.sessionStorage.setItem("chatbot.sessionId", data.sessionId);
+      router.push("/chat");
+    } catch {
+      setErrorMessage("Nao foi possivel conectar ao servico de login. Tente novamente em instantes.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -116,8 +150,7 @@ export default function LoginPage() {
                   Acesse sua conta Unifor
                 </CardTitle>
                 <CardDescription className="mx-auto max-w-md text-base leading-7 text-slate-600">
-                  Entre com sua matrícula e senha para acessar o chat. O envio está preparado para o back-end, mas por
-                  enquanto segue em modo demonstrativo.
+                  Entre com sua matrícula e senha para acessar o chat institucional.
                 </CardDescription>
               </div>
             </CardHeader>
@@ -165,6 +198,12 @@ export default function LoginPage() {
                   </div>
                 </div>
 
+                {errorMessage ? (
+                  <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                    {errorMessage}
+                  </p>
+                ) : null}
+
                 <Button
                   type="submit"
                   disabled={isSubmitting}
@@ -180,4 +219,3 @@ export default function LoginPage() {
     </section>
   );
 }
-

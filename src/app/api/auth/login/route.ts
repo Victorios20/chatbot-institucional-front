@@ -19,7 +19,7 @@ type LoginErrorResponse = {
   status?: number;
 };
 
-const DEFAULT_ERROR_MESSAGE = "Nao foi possivel realizar o login. Tente novamente.";
+const DEFAULT_ERROR_MESSAGE = "Não foi possível realizar o login. Tente novamente.";
 
 function buildErrorResponse(message: string, status: number, code?: string) {
   const body: LoginErrorResponse = {
@@ -36,7 +36,7 @@ function buildErrorResponse(message: string, status: number, code?: string) {
 
 function normalizeErrorMessage(error?: LoginErrorResponse) {
   if (error?.code === "INVALID_CREDENTIALS" || error?.status === 401) {
-    return "Matricula ou senha invalidos.";
+    return "Matrícula ou senha inválidos.";
   }
 
   return error?.message || DEFAULT_ERROR_MESSAGE;
@@ -48,20 +48,20 @@ export async function POST(request: Request) {
   try {
     body = (await request.json()) as LoginRequest;
   } catch {
-    return buildErrorResponse("Dados de login invalidos.", 400, "INVALID_REQUEST_BODY");
+    return buildErrorResponse("Dados de login inválidos.", 400, "INVALID_REQUEST_BODY");
   }
 
   const registration = body.registration?.trim();
   const password = body.password;
 
   if (!registration || !password) {
-    return buildErrorResponse("Informe matricula e senha para continuar.", 400, "MISSING_CREDENTIALS");
+    return buildErrorResponse("Informe matrícula e senha para continuar.", 400, "MISSING_CREDENTIALS");
   }
 
   const apiBaseUrl = process.env.CHATBOT_API_BASE_URL;
 
   if (!apiBaseUrl) {
-    return buildErrorResponse("Servico de login nao configurado.", 500, "API_BASE_URL_NOT_CONFIGURED");
+    return buildErrorResponse("Serviço de login não configurado.", 500, "API_BASE_URL_NOT_CONFIGURED");
   }
 
   try {
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
     }
 
     if (!data.sessionId) {
-      return buildErrorResponse("Resposta de login invalida.", 502, "INVALID_LOGIN_RESPONSE");
+      return buildErrorResponse("Resposta de login inválida.", 502, "INVALID_LOGIN_RESPONSE");
     }
 
     const successBody: LoginSuccessResponse = {
@@ -92,6 +92,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json(successBody);
   } catch {
-    return buildErrorResponse("Nao foi possivel conectar ao servico de login.", 503, "LOGIN_SERVICE_UNAVAILABLE");
+    return buildErrorResponse("Não foi possível conectar ao serviço de login.", 503, "LOGIN_SERVICE_UNAVAILABLE");
   }
 }

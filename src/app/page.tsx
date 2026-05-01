@@ -2,13 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Eye, EyeOff, Instagram, Linkedin, Youtube } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/toast";
+import { SESSION_STORAGE_KEY } from "@/lib/session";
 
 type LoginPayload = {
   registration: string;
@@ -45,11 +47,32 @@ const SOCIAL_LINKS = [
 
 export default function LoginPage() {
   const router = useRouter();
+  const toast = useToast();
   const [matricula, setMatricula] = useState("");
   const [senha, setSenha] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    const sessionId = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
+
+    if (sessionId) {
+      router.replace("/chat");
+    }
+  }, [router]);
+
+  function getLoginErrorMessage(response: Response, data: LoginErrorResponse) {
+    if (response.status === 401 || data.code === "INVALID_CREDENTIALS") {
+      return "Matrícula ou senha inválidos.";
+    }
+
+    if (response.status === 503 || data.code === "LOGIN_SERVICE_UNAVAILABLE") {
+      return "Não foi possível conectar ao serviço de login.";
+    }
+
+    return data.message || "Não foi possível realizar o login. Verifique seus dados e tente novamente.";
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -73,19 +96,26 @@ export default function LoginPage() {
       const data = (await response.json().catch(() => ({}))) as LoginSuccessResponse & LoginErrorResponse;
 
       if (!response.ok) {
-        setErrorMessage(data.message || "Nao foi possivel realizar o login. Verifique seus dados e tente novamente.");
+        const message = getLoginErrorMessage(response, data);
+        setErrorMessage(message);
+        toast.error(message);
         return;
       }
 
       if (!data.sessionId) {
-        setErrorMessage("Nao foi possivel iniciar sua sessao. Tente novamente.");
+        const message = "Não foi possível iniciar sua sessão. Tente novamente.";
+        setErrorMessage(message);
+        toast.error(message);
         return;
       }
 
-      window.sessionStorage.setItem("chatbot.sessionId", data.sessionId);
+      window.sessionStorage.setItem(SESSION_STORAGE_KEY, data.sessionId);
+      toast.success("Login realizado com sucesso");
       router.push("/chat");
     } catch {
-      setErrorMessage("Nao foi possivel conectar ao servico de login. Tente novamente em instantes.");
+      const message = "Não foi possível conectar ao serviço de login.";
+      setErrorMessage(message);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }

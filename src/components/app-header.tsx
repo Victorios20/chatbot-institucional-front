@@ -1,10 +1,13 @@
 ﻿"use client";
 
 import Image from "next/image";
-import { Moon, Sun } from "lucide-react";
+import { LogOut, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
+import { SESSION_STORAGE_KEY } from "@/lib/session";
 
 type ThemeMode = "light" | "dark";
 
@@ -26,6 +29,8 @@ function applyTheme(mode: ThemeMode) {
 }
 
 export function AppHeader() {
+  const router = useRouter();
+  const toast = useToast();
   const [theme, setTheme] = useState<ThemeMode>("light");
 
   useEffect(() => {
@@ -39,6 +44,12 @@ export function AppHeader() {
     applyTheme(nextTheme);
     window.localStorage.setItem("theme", nextTheme);
     setTheme(nextTheme);
+  }
+
+  function handleLogout() {
+    window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    toast.success("Logout realizado com sucesso");
+    router.replace("/");
   }
 
   return (
@@ -62,15 +73,28 @@ export function AppHeader() {
           </div>
         </div>
 
-        <Button
-          size="icon"
-          variant="outline"
-          onClick={toggleTheme}
-          aria-label={theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"}
-          className="rounded-full"
-        >
-          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={toggleTheme}
+            aria-label={theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"}
+            className="rounded-full"
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </Button>
+
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={handleLogout}
+            aria-label="Sair"
+            title="Sair"
+            className="rounded-full"
+          >
+            <LogOut size={18} />
+          </Button>
+        </div>
       </div>
     </header>
   );
